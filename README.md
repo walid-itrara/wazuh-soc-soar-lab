@@ -1,4 +1,4 @@
-# 🛡️ Enterprise SOC & SOAR Laboratory: Real-Time Threat Detection & Automated Active Response with Wazuh
+# Enterprise SOC & SOAR Laboratory: Real-Time Threat Detection & Automated Active Response with Wazuh
 
 ![Wazuh](https://img.shields.io/badge/SIEM%2FXDR-Wazuh%20v4.7.5-005571?style=for-the-badge&logo=wazuh)
 ![Ubuntu](https://img.shields.io/badge/Target-Ubuntu%2026.04.1%20LTS-E95420?style=for-the-badge&logo=ubuntu)
@@ -18,7 +18,7 @@
 
 ---
 
-## 📌 Executive Summary
+## Executive Summary
 Modern Security Operations Centers (SOCs) cannot rely solely on passive log aggregation; they require real-time detection engineering coupled with automated incident response (SOAR) to neutralize threats before lateral movement or data exfiltration occurs.
 
 This project documents the end-to-end design, deployment, and validation of a virtualized **SIEM/XDR and SOAR laboratory** powered by **Wazuh**. Operating in a **Purple Team methodology**, realistic cyberattacks were launched from a **Kali Linux** offensive node against a hardened **Ubuntu 26.04.1 LTS** production server running **Nginx** and **OpenSSH**.
@@ -30,7 +30,7 @@ This project documents the end-to-end design, deployment, and validation of a vi
 
 ---
 
-## 🏗️ Lab Network & Architecture
+## Lab Network & Architecture
 
 ~~~text
 +---------------------------------------------------------------------------------------------------+
@@ -76,11 +76,11 @@ This project documents the end-to-end design, deployment, and validation of a vi
 ### Endpoint Enrollment & Health Validation
 The target server `ubuntu-prod-server` (`192.168.100.240`) was enrolled using key-based authentication (`port 1515/tcp`) and established an AES-encrypted telemetry channel (`port 1514/tcp`) with the Manager:
 
-![Agent Active](screenshots/01-agent-active.png)
+![Agent Active](screenshots/agent-active.png)
 
 ---
 
-## ⚙️ Technical Implementation & Configuration
+## Technical Implementation & Configuration
 
 ### 1. Endpoint Log Collection (`configs/agent-ossec.conf`)
 On Ubuntu 26.04.1 LTS, `rsyslog` was deployed alongside the Wazuh Agent to ensure standard syslog serialization into `/var/log/auth.log`, while Nginx access logs were hooked into the agent configuration:
@@ -139,7 +139,7 @@ To automate threat containment, the Wazuh Manager was configured to trigger the 
 
 ---
 
-## ⚔️ Purple Team Scenarios: Attack & Detection Engineering
+## Purple Team Scenarios: Attack & Detection Engineering
 
 ### Scenario 1: Web Application Exploitation (SQLi & LFI — MITRE T1190)
 
@@ -155,7 +155,7 @@ curl -i "http://192.168.100.240/../../../../etc/passwd"
 curl -i -A "Nikto/2.1.6" "http://192.168.100.240/"
 ~~~
 
-![Web Attacks from Kali](screenshots/02-web-attacks-kali.png)
+![Web Attacks from Kali](screenshots/web-attacks-kali.png)
 
 #### 🔵 Blue Team Detection Pipeline
 * **Raw Log Captured (`/var/log/nginx/access.log`):**
@@ -189,16 +189,16 @@ Wazuh ingested the `/var/log/auth.log` stream (**151 hits**) and escalated sever
 | `2502` | **Level 10** | `syslog: User missed the password more than one time` | Repeated authentication failure correlation |
 | `40111` | **Level 10** | `Multiple authentication failures.` | High-confidence Brute-Force attack (**MITRE T1110**) |
 
-![SSH Brute-Force Alerts](screenshots/03-ssh-bruteforce-alerts.png)
+![SSH Brute-Force Alerts](screenshots/ssh-bruteforce-alerts.png)
 
 ---
 
-## ⚡ SOAR Implementation: Automated Kernel-Level Remediation
+## SOAR Implementation: Automated Kernel-Level Remediation
 
 ### 1. Network Isolation Proof (Attacker Perspective)
 Immediately after dispatching the SQL Injection payload at `15:14:20 GMT`, Kali Linux attempted to verify connectivity to `192.168.100.240` via ICMP echo requests (`ping -c 3`). All packets were dropped (**`100% packet loss`**), confirming total network isolation:
 
-![Kali Blocked Ping](screenshots/04-kali-blocked-ping.png)
+![Kali Blocked Ping](screenshots/kali-blocked-ping.png)
 
 ### 2. Netfilter/iptables & Forensic JSON Telemetry (Target Perspective)
 Inspecting the Ubuntu server's kernel firewall (`sudo iptables -L INPUT -n -v`) and the Wazuh Active Response audit log (`/var/ossec/logs/active-responses.log`) provides irrefutable forensic proof of automated containment:
@@ -209,7 +209,7 @@ Inspecting the Ubuntu server's kernel firewall (`sudo iptables -L INPUT -n -v`) 
 * **Active Response Audit Log (`active-responses.log`):**
   * Displays the exact JSON payload sent by `wazuh-execd` on `node01`, linking the `firewall-drop` execution directly to `rule.id: 100002` and `mitre.id: T1190`.
 
-![Iptables and Active Response Log](screenshots/05-iptables-active-response-log.png)
+![Iptables and Active Response Log](screenshots/iptables-active-response-log.png)
 
 ### 3. SIEM Mean Time to Respond (MTTR) Verification
 In the Wazuh Threat Hunting dashboard, the chronological event stream demonstrates sub-second automated containment alongside full administrative auditability:
@@ -219,11 +219,11 @@ In the Wazuh Threat Hunting dashboard, the chronological event stream demonstrat
 * **Measured Reaction Time (MTTR):** `16:14:22.163 - 16:14:21.734 = 429 ms`
 * **Post-Incident Administrative Audit (`16:17:50` – `16:18:14`):** Rules `5715` (`sshd: authentication success`), `5501` (`PAM: Login session opened`), and `5402` (`Successful sudo to ROOT executed`) logged the SOC analyst's SSH session used to inspect `iptables`.
 
-![SOAR Correlation Dashboard](screenshots/06-soar-correlation-dashboard.png)
+![SOAR Correlation Dashboard](screenshots/soar-correlation-dashboard.png)
 
 ---
 
-## 📊 Key Security Metrics & Results
+## Key Security Metrics & Results
 
 | Metric | Measured Value | Details |
 | :--- | :---: | :--- |
@@ -234,7 +234,7 @@ In the Wazuh Threat Hunting dashboard, the chronological event stream demonstrat
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ~~~text
 wazuh-soc-soar-lab/
@@ -255,7 +255,7 @@ wazuh-soc-soar-lab/
 
 ---
 
-## 🚀 How to Reproduce This Lab
+## How to Reproduce This Lab
 
 1. **Deploy Wazuh Server:**
    Deploy the official `wazuh-docker` single-node stack on the host machine (`192.168.100.14`).
@@ -274,5 +274,5 @@ wazuh-soc-soar-lab/
 
 ---
 
-## 👤 Author
+## Author
 **Walid Itrara** — *Engineering Student in IT Security & Digital Trust*
