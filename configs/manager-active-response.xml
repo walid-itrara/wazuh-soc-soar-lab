@@ -1,0 +1,11 @@
+﻿<!-- À insérer dans /var/ossec/etc/ossec.conf sur le Wazuh Manager -->
+<ossec_config>
+  <active-response>
+    <disabled>no</disabled>
+    <command>firewall-drop</command>
+    <location>local</location>
+    <level>10</level>
+    <rules_id>31103,100002,5712,5758,5760,40111</rules_id>
+    <timeout>600</timeout>
+  </active-response>
+</ossec_config>
